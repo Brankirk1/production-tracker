@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -90,7 +91,7 @@ a{color:inherit;text-decoration:none}
 .rush-toggle-text .sub{font-size:12px;color:#777}
 .toggle-switch{width:44px;height:24px;background:#d0d0d0;border-radius:12px;position:relative;flex-shrink:0;transition:background .2s}
 .toggle-switch.on{background:#dc2626}
-.toggle-switch::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
+.toggle-switch::after{content:’’;position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
 .toggle-switch.on::after{transform:translateX(20px)}
 
 /* Pipeline */
@@ -134,14 +135,14 @@ a{color:inherit;text-decoration:none}
 
 /* Stage colors */
 :root{
-  --eng-bg:#dbeafe;--eng-c:#1e3a5f;--eng-b:#1a6fb5;
-  --fab-bg:#d1fae5;--fab-c:#064e2e;--fab-b:#0f6e56;
-  --upg-bg:#dcfce7;--upg-c:#14532d;--upg-b:#3b6d11;
-  --fir-bg:#ede9fe;--fir-c:#2e1065;--fir-b:#534ab7;
-  --pai-bg:#fef3c7;--pai-c:#451a03;--pai-b:#ba7517;
-  --asm-bg:#fce7f3;--asm-c:#500724;--asm-b:#993556;
-  --qc-bg:#ffedd5;--qc-c:#431407;--qc-b:#854f0b;
-  --shi-bg:#dcfce7;--shi-c:#14532d;--shi-b:#3b6d11;
+–eng-bg:#dbeafe;–eng-c:#1e3a5f;–eng-b:#1a6fb5;
+–fab-bg:#d1fae5;–fab-c:#064e2e;–fab-b:#0f6e56;
+–upg-bg:#dcfce7;–upg-c:#14532d;–upg-b:#3b6d11;
+–fir-bg:#ede9fe;–fir-c:#2e1065;–fir-b:#534ab7;
+–pai-bg:#fef3c7;–pai-c:#451a03;–pai-b:#ba7517;
+–asm-bg:#fce7f3;–asm-c:#500724;–asm-b:#993556;
+–qc-bg:#ffedd5;–qc-c:#431407;–qc-b:#854f0b;
+–shi-bg:#dcfce7;–shi-c:#14532d;–shi-b:#3b6d11;
 }
 
 /* Install banner */
@@ -150,6 +151,7 @@ a{color:inherit;text-decoration:none}
 .install-banner .steps{margin-top:6px;color:#3b5a8a;line-height:1.8}
 .install-close{float:right;cursor:pointer;color:#3b5a8a;font-size:18px;line-height:1;margin-left:8px}
 </style>
+
 </head>
 <body>
 
@@ -185,6 +187,7 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <!-- New/Edit Job Modal -->
+
 <div class="modal-overlay" id="new-modal">
   <div class="modal">
     <h2 id="new-title">New job</h2>
@@ -202,7 +205,7 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="two-col">
       <div class="field"><label>Stage</label><select id="nj-stage"></select></div>
-      <div class="field"><label>Due date</label><input type="date" id="nj-due"></div>
+      <div class="field"><label>Due date <span style="font-size:11px;color:#1a8a5a;font-weight:500">(auto-set to 6 weeks from today)</span></label><input type="date" id="nj-due"><div style="font-size:11px;color:#777;margin-top:4px" id="due-hint"></div></div>
     </div>
     <div class="field"><label>Notes</label><textarea id="nj-notes" placeholder="Any details…"></textarea></div>
     <div class="modal-footer">
@@ -213,6 +216,7 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <!-- Scan Modal -->
+
 <div class="modal-overlay" id="scan-modal">
   <div class="modal">
     <h2>Scan barcode</h2>
@@ -241,11 +245,13 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <!-- Detail Modal -->
+
 <div class="modal-overlay" id="detail-modal">
   <div class="modal" id="detail-content"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
 <script>
 const STAGES=["Engineering","Fabrication","Upgrades","Fireline","Paint","Assembly","QC","Shipping"];
 const SBGL={
@@ -356,7 +362,11 @@ function openNew(jobId){
   document.getElementById('nj-name').value=j?j.name:'';
   document.getElementById('nj-id').value=j?j.jobId:'JOB-'+(jobs.length+1).toString().padStart(3,'0');
   document.getElementById('nj-cust').value=j?j.customer:'';
-  document.getElementById('nj-due').value=j&&j.dueDate?j.dueDate:'';
+  const sixWeeks=new Date();sixWeeks.setDate(sixWeeks.getDate()+42);
+  const sixWeeksStr=sixWeeks.toISOString().split('T')[0];
+  document.getElementById('nj-due').value=j&&j.dueDate?j.dueDate:sixWeeksStr;
+  const dueDisp=new Date(sixWeeksStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('due-hint').textContent=j&&j.dueDate?'':'Auto-set to: '+dueDisp;
   document.getElementById('nj-notes').value=j?j.notes:'';
   document.getElementById('nj-stage').innerHTML=STAGES.map(s=>`<option ${j&&j.stage===s?'selected':''}>${s}</option>`).join('');
   rushOn=j?!!j.rush:false;
@@ -462,7 +472,6 @@ function deleteJob(id){
   jobs=jobs.filter(x=>x.id!==id);save();closePanel('detail-modal');render();
 }
 
-function openPanel(id){document.getElementById(id).classList.add('open');}
 function closePanel(id){document.getElementById(id).classList.remove('open');if(id==='scan-modal')stopScan();}
 
 document.querySelectorAll('.modal-overlay').forEach(o=>{
@@ -545,5 +554,6 @@ function scanMove(id,stage){
 render();
 setInterval(render,60000);
 </script>
+
 </body>
 </html>
