@@ -1,571 +1,215 @@
 <!DOCTYPE html>
-<!-- saved from url=(0056)file:///C:/Users/CNC/Downloads/production-tracker_5.html -->
+<!-- saved from url=(0057)file:///C:/Users/Brandon/Downloads/barcode-generator.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Production Tracker">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#ffffff">
-<title>Production Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Barcode Generator</title>
+<script src="./Job Barcode Generator_files/JsBarcode.all.min.js.download"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#1a1a1a;min-height:100vh}
-a{color:inherit;text-decoration:none}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
-/* Top nav */
-.nav{background:#fff;border-bottom:1px solid #e5e5e5;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.nav h1{font-size:17px;font-weight:600;color:#1a1a1a}
-.nav-btns{display:flex;gap:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f0ece4;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 16px}
 
-/* Buttons */
-.btn{background:#fff;border:1px solid #d0d0d0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;color:#1a1a1a;font-family:inherit;font-weight:500;white-space:nowrap}
-.btn:active{opacity:.7}
-.btn-primary{background:#1a6fb5;color:#fff;border-color:#1a6fb5}
-.btn-scan{background:#1a8a5a;color:#fff;border-color:#1a8a5a}
-.btn-rush{background:#fef2f2;color:#991b1b;border-color:#fca5a5}
-.btn-danger{background:#fff;color:#dc2626;border-color:#fca5a5}
-.btn-sm{padding:5px 10px;font-size:12px}
+.header{text-align:center;margin-bottom:36px}
+.header h1{font-size:28px;font-weight:600;color:#1a1a1a;letter-spacing:-0.5px}
+.header p{font-size:14px;color:#777;margin-top:6px}
 
-/* Layout */
-.page{padding:16px;max-width:700px;margin:0 auto}
+.card{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;border:1px solid #e0dbd2}
 
-/* Stats */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.stat{background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e5e5e5}
-.stat-label{font-size:10px;color:#777;margin-bottom:2px;text-transform:uppercase;letter-spacing:.04em}
-.stat-val{font-size:20px;font-weight:700;color:#1a1a1a}
-.stat-val.rush{color:#991b1b}
-.stat-val.warn{color:#92400e}
-.stat-val.danger{color:#991b1b}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.field input{width:100%;padding:12px 14px;border:1px solid #d5d0c8;border-radius:10px;font-size:16px;font-family:'DM Mono',monospace;color:#1a1a1a;background:#fafaf8;transition:border-color .15s}
+.field input:focus{outline:none;border-color:#1a1a1a;background:#fff}
 
-/* Legend */
-.legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.legend-item{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-/* Tabs */
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
-.tab{background:#fff;border:1px solid #e0e0e0;border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;color:#555;white-space:nowrap;font-family:inherit;font-weight:500}
-.tab:active{opacity:.7}
+.btn-generate{width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .15s;margin-top:4px}
+.btn-generate:hover{opacity:.85}
+.btn-generate:active{opacity:.7}
 
-/* Job list */
-.jobs-list{display:flex;flex-direction:column;gap:8px}
-.job-card{background:#fff;border-radius:10px;border:1px solid #e5e5e5;border-left:5px solid #ccc;padding:12px 14px;cursor:pointer;position:relative}
-.job-card:active{opacity:.85}
-.job-card.is-rush{border-top:2.5px solid #dc2626;border-right:1px solid #fca5a5;border-bottom:1px solid #fca5a5}
-.job-card.late-warn{background:#fffbf0}
-.job-card.late-danger{background:#fff8f8}
-.job-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
-.job-card-name{font-size:15px;font-weight:600;color:#1a1a1a;flex:1}
-.job-card-badges{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
-.badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600}
-.rush-badge{background:#fef2f2;color:#991b1b;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;border:1px solid #fca5a5}
-.late-badge-warn{background:#fef3c7;color:#92400e;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
-.late-badge-danger{background:#fef2f2;color:#991b1b;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
-.job-card-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:#777}
-.job-card-meta .due-soon{color:#92400e;font-weight:600}
-.job-card-meta .due-overdue{color:#dc2626;font-weight:600}
-.empty{text-align:center;padding:3rem 1rem;color:#999;font-size:15px}
+.preview{margin-top:24px;display:none}
+.preview-label{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
 
-/* Modal overlay */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;overflow-y:auto;padding:20px 16px}
-.modal-overlay.open{display:flex;align-items:flex-start;justify-content:center}
-.modal{background:#fff;border-radius:16px;width:100%;max-width:500px;padding:20px;margin:auto}
-.modal h2{font-size:17px;font-weight:700;margin-bottom:16px;color:#1a1a1a}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.barcode-card{background:#fff;border:1px solid #e0dbd2;border-radius:12px;padding:20px;text-align:center}
+.barcode-card svg{max-width:100%;height:auto}
+.barcode-meta{margin-top:12px;display:flex;justify-content:space-between;font-size:12px;color:#888;font-family:'DM Mono',monospace}
 
-/* Form fields */
-.field{margin-bottom:14px}
-.field label{display:block;font-size:12px;color:#555;margin-bottom:5px;font-weight:500}
-.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid #d0d0d0;border-radius:8px;font-size:15px;background:#fff;color:#1a1a1a;font-family:inherit;-webkit-appearance:none}
-.field textarea{height:64px;resize:vertical}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#1a6fb5}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-print{width:100%;background:#f0ece4;color:#1a1a1a;border:1px solid #d5d0c8;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:12px;transition:background .15s}
+.btn-print:hover{background:#e5e0d8}
 
-/* Rush toggle */
-.rush-toggle{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #d0d0d0;border-radius:10px;cursor:pointer;margin-bottom:14px;background:#fff}
-.rush-toggle.active{background:#fef2f2;border-color:#fca5a5}
-.rush-toggle-text .title{font-size:14px;font-weight:600;color:#1a1a1a}
-.rush-toggle-text .sub{font-size:12px;color:#777}
-.toggle-switch{width:44px;height:24px;background:#d0d0d0;border-radius:12px;position:relative;flex-shrink:0;transition:background .2s}
-.toggle-switch.on{background:#dc2626}
-.toggle-switch::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
-.toggle-switch.on::after{transform:translateX(20px)}
+.batch-section{margin-top:24px;border-top:1px solid #e0dbd2;padding-top:20px}
+.batch-label{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.batch-hint{font-size:12px;color:#999;margin-bottom:10px}
+.btn-add{background:transparent;border:1px dashed #bbb;border-radius:8px;padding:8px 14px;font-size:13px;color:#777;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-add:hover{background:#f7f5f0;border-color:#999}
+.batch-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.batch-item{display:flex;align-items:center;gap:8px;background:#fafaf8;border:1px solid #e0dbd2;border-radius:8px;padding:8px 12px}
+.batch-item-num{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#1a1a1a;flex:1}
+.batch-item-cust{font-size:12px;color:#999;flex:1}
+.batch-remove{background:transparent;border:none;color:#bbb;cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+.batch-remove:hover{color:#dc2626}
+.btn-print-all{width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px}
+.btn-print-all:hover{opacity:.85}
 
-/* Pipeline */
-.pipeline{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 14px}
-.pip-btn{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid transparent;cursor:pointer;font-family:inherit}
-.pip-btn:active{opacity:.7}
+.error{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;color:#991b1b;margin-top:8px;display:none}
 
-/* Detail fields */
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-.detail-field{background:#f7f7f7;border-radius:8px;padding:10px 12px}
-.detail-field .lbl{font-size:11px;color:#777;margin-bottom:2px;text-transform:uppercase;letter-spacing:.04em}
-.detail-field .val{font-size:14px;font-weight:600;color:#1a1a1a}
-
-/* Alert banners */
-.alert{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:8px;font-weight:600}
-.alert.rush{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5}
-.alert.danger{background:#fef2f2;color:#991b1b}
-.alert.warn{background:#fef3c7;color:#92400e}
-.alert.due{background:#fef3c7;color:#92400e}
-
-/* Log */
-.log-entry{font-size:12px;color:#777;padding:5px 0;border-bottom:1px solid #f0f0f0}
-.log-entry:last-child{border-bottom:none}
-
-/* Note row */
-.note-row{display:flex;gap:8px;margin-top:10px}
-.note-row input{flex:1;padding:9px 12px;border:1px solid #d0d0d0;border-radius:8px;font-size:14px;font-family:inherit}
-
-/* Scanner */
-.scanner-wrap{background:#f7f7f7;border-radius:10px;padding:14px;margin-bottom:14px}
-.scanner-wrap h3{font-size:14px;font-weight:600;margin-bottom:10px;color:#1a1a1a}
-#qr-video{width:100%;border-radius:8px;display:block;max-height:240px;object-fit:cover;background:#000}
-.scan-result{margin-top:8px;padding:9px 12px;background:#ecfdf5;border-radius:8px;font-size:13px;color:#065f46;font-weight:500;display:none}
-.scan-error{margin-top:8px;font-size:12px;color:#dc2626;display:none;padding:8px 12px;background:#fef2f2;border-radius:8px}
-.manual-row{display:flex;gap:8px;margin-top:10px}
-.manual-row input{flex:1;padding:9px 12px;border:1px solid #d0d0d0;border-radius:8px;font-size:14px;font-family:inherit}
-.scan-match{background:#f7f7f7;border-radius:10px;padding:12px;margin-bottom:12px}
-.scan-match h3{font-size:13px;font-weight:600;margin-bottom:8px;color:#1a1a1a}
-.scan-match-info{font-size:13px;color:#1a1a1a;margin-bottom:10px}
-.scan-stage-btns{display:flex;gap:6px;flex-wrap:wrap}
-
-/* Stage colors */
-:root{
-  --eng-bg:#dbeafe;--eng-c:#1e3a5f;--eng-b:#1a6fb5;
-  --fab-bg:#d1fae5;--fab-c:#064e2e;--fab-b:#0f6e56;
-  --upg-bg:#dcfce7;--upg-c:#14532d;--upg-b:#3b6d11;
-  --fir-bg:#ede9fe;--fir-c:#2e1065;--fir-b:#534ab7;
-  --pai-bg:#fef3c7;--pai-c:#451a03;--pai-b:#ba7517;
-  --asm-bg:#fce7f3;--asm-c:#500724;--asm-b:#993556;
-  --qc-bg:#ffedd5;--qc-c:#431407;--qc-b:#854f0b;
-  --shi-bg:#dcfce7;--shi-c:#14532d;--shi-b:#3b6d11;
+/* Print styles */
+@media print{
+  body{background:#fff;padding:0}
+  .header,.card .field,.btn-generate,.btn-print,.btn-print-all,.batch-section,.preview-label,.barcode-meta,.no-print{display:none!important}
+  .preview{display:block!important;margin:0;padding:0}
+  .barcode-card{border:none;padding:8px;page-break-inside:avoid}
+  .print-sheet{display:flex!important;flex-wrap:wrap;gap:16px;padding:16px}
+  .print-item{border:1px solid #ccc;border-radius:8px;padding:12px;text-align:center;width:200px;page-break-inside:avoid}
+  .print-item svg{width:180px}
+  .print-item-meta{font-size:11px;color:#333;margin-top:6px;font-family:monospace}
 }
-
-/* Install banner */
-.install-banner{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#1e3a5f}
-.install-banner strong{display:block;font-size:14px;margin-bottom:4px}
-.install-banner .steps{margin-top:6px;color:#3b5a8a;line-height:1.8}
-.install-close{float:right;cursor:pointer;color:#3b5a8a;font-size:18px;line-height:1;margin-left:8px}
 </style>
 </head>
 <body>
 
-<div class="nav">
-  <h1>Production Tracker</h1>
-  <div class="nav-btns">
-    <button class="btn btn-scan btn-sm" onclick="openPanel(&#39;scan-modal&#39;)">Scan</button>
-    <button class="btn btn-primary btn-sm" onclick="openNew()">+ Job</button>
-  </div>
+<div class="header no-print">
+  <h1>Job Barcode Generator</h1>
+  <p>Generate and print barcodes for your production jobs</p>
 </div>
 
-<div class="page">
-  <div class="install-banner" id="install-banner">
-    <span class="install-close" onclick="document.getElementById(&#39;install-banner&#39;).style.display=&#39;none&#39;">×</span>
-    <strong>Install this app on your phone</strong>
-    <div class="steps">
-      iPhone: Tap the Share button in Safari → "Add to Home Screen"<br>
-      Android: Tap the 3-dot menu in Chrome → "Add to Home Screen"
+<div class="card no-print">
+  <div class="two-col">
+    <div class="field">
+      <label>Invoice / Job #</label>
+      <input id="inv-num" type="text" placeholder="11047" maxlength="20" onkeydown="if(event.key===&#39;Enter&#39;)generate()">
+    </div>
+    <div class="field">
+      <label>Customer name</label>
+      <input id="cust-name" type="text" placeholder="Smith Co." onkeydown="if(event.key===&#39;Enter&#39;)generate()">
     </div>
   </div>
+  <button class="btn-generate" onclick="generate()">Generate Barcode</button>
+  <div class="error" id="error">Please enter an invoice or job number.</div>
 
-  <div class="stats" id="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-val">0</div></div>
-    <div class="stat"><div class="stat-label">Rush</div><div class="stat-val rush">0</div></div>
-    <div class="stat"><div class="stat-label">Past due</div><div class="stat-val danger">0</div></div>
-    <div class="stat"><div class="stat-label">72h+</div><div class="stat-val warn">0</div></div>
-    <div class="stat"><div class="stat-label">96h+</div><div class="stat-val danger">0</div></div>
-    <div class="stat"><div class="stat-label">Shipped</div><div class="stat-val">0</div></div></div>
-
-  <div class="legend">
-    <span class="legend-item" style="background:#fef2f2;color:#991b1b;border:1px solid #fca5a5">RUSH</span>
-    <span class="legend-item" style="background:#fef3c7;color:#92400e">72h+ in stage</span>
-    <span class="legend-item" style="background:#fef2f2;color:#991b1b">96h+ in stage</span>
-    <span class="legend-item" style="background:#fef3c7;color:#92400e">Due soon</span>
-  </div>
-
-  <div class="tabs" id="tabs"><button class="tab" style="background:#1a6fb5;color:#fff;border-color:#1a6fb5" onclick="setFilter(&#39;All&#39;)">All (0)</button><button class="tab" style="" onclick="setFilter(&#39;Rush&#39;)">Rush (0)</button><button class="tab" style="" onclick="setFilter(&#39;Late&#39;)">Late (0)</button><button class="tab" style="" onclick="setFilter(&#39;Engineering&#39;)">Engineering (0)</button><button class="tab" style="" onclick="setFilter(&#39;Fabrication&#39;)">Fabrication (0)</button><button class="tab" style="" onclick="setFilter(&#39;Upgrades&#39;)">Upgrades (0)</button><button class="tab" style="" onclick="setFilter(&#39;Fireline&#39;)">Fireline (0)</button><button class="tab" style="" onclick="setFilter(&#39;Paint&#39;)">Paint (0)</button><button class="tab" style="" onclick="setFilter(&#39;Assembly&#39;)">Assembly (0)</button><button class="tab" style="" onclick="setFilter(&#39;QC&#39;)">QC (0)</button><button class="tab" style="" onclick="setFilter(&#39;Shipping&#39;)">Shipping (0)</button></div>
-  <div class="jobs-list" id="job-list"><div class="empty">No jobs here.<br>Tap "+ Job" to add one.</div></div>
-</div>
-
-<!-- New/Edit Job Modal -->
-<div class="modal-overlay" id="new-modal">
-  <div class="modal">
-    <h2 id="new-title">New job</h2>
-    <div class="rush-toggle" id="rush-toggle" onclick="toggleRushUI()">
-      <div class="toggle-switch" id="rush-switch"></div>
-      <div class="rush-toggle-text">
-        <div class="title">Mark as RUSH</div>
-        <div class="sub">Sorted to top, highlighted red</div>
+  <div class="preview" id="preview">
+    <div class="preview-label">Preview</div>
+    <div class="barcode-card">
+      <svg id="barcode"></svg>
+      <div class="barcode-meta">
+        <span id="meta-num"></span>
+        <span id="meta-cust"></span>
       </div>
     </div>
-    <div class="field"><label>Job name / description</label><input id="nj-name" placeholder="e.g. Unit #47 — Fire suppression panel" autocomplete="off"></div>
-    <div class="two-col">
-      <div class="field"><label>Job ID / PO # / Item code</label><input id="nj-id" placeholder="JOB-001" autocomplete="off"></div>
-      <div class="field"><label>Customer</label><input id="nj-cust" placeholder="Customer name" autocomplete="off"></div>
-    </div>
-    <div class="two-col">
-      <div class="field"><label>Stage</label><select id="nj-stage"></select></div>
-      <div class="field"><label>Due date <span style="font-size:11px;color:#1a8a5a;font-weight:500">(auto-set to 6 weeks from today)</span></label><input type="date" id="nj-due"><div style="font-size:11px;color:#777;margin-top:4px" id="due-hint"></div></div>
-    </div>
-    <div class="field"><label>Notes</label><textarea id="nj-notes" placeholder="Any details…"></textarea></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closePanel(&#39;new-modal&#39;)">Cancel</button>
-      <button class="btn btn-primary" onclick="saveJob()">Save</button>
+    <button class="btn-print" onclick="printSingle()">Print this barcode</button>
+  </div>
+
+  <div class="batch-section">
+    <div class="batch-label">Print multiple barcodes</div>
+    <div class="batch-hint">Add several jobs at once and print them all on one sheet.</div>
+    <div class="batch-list" id="batch-list"></div>
+    <button class="btn-add" onclick="addToBatch()">+ Add current job to batch</button>
+    <div id="batch-print-btn" style="display:none;margin-top:10px">
+      <button class="btn-print-all" onclick="printBatch()">Print all barcode sheet</button>
     </div>
   </div>
 </div>
 
-<!-- Scan Modal -->
-<div class="modal-overlay" id="scan-modal">
-  <div class="modal">
-    <h2>Scan barcode</h2>
-    <div class="scanner-wrap">
-      <h3>Option 1 — Use camera to scan</h3>
-      <p style="font-size:12px;color:#555;margin-bottom:10px">Tap the button below to open your camera and scan a barcode on the invoice.</p>
-      <label style="display:block;background:#1a8a5a;color:#fff;border-radius:8px;padding:12px;text-align:center;font-size:15px;font-weight:600;cursor:pointer">
-        Open Camera to Scan
-        <input type="file" id="barcode-file" accept="image/*" capture="environment" style="display:none" onchange="handleBarcodeImage(this)">
-      </label>
-      <canvas id="qr-canvas" style="display:none"></canvas>
-      <div class="scan-result" id="scan-result" style="display:none"></div>
-      <div class="scan-error" id="scan-error" style="display:none"></div>
-    </div>
-    <div class="scanner-wrap" style="margin-top:10px">
-      <h3>Option 2 — Type it in</h3>
-      <p style="font-size:12px;color:#555;margin-bottom:8px">Type or paste the invoice / job number manually.</p>
-      <div class="manual-row">
-        <input id="manual-bc" placeholder="e.g. 11047" autocomplete="off" onkeydown="if(event.key===&#39;Enter&#39;)applyManual()">
-        <button class="btn" onclick="applyManual()">Use</button>
-      </div>
-    </div>
-    <div id="scan-match" style="display:none" class="scan-match">
-      <h3>Matched job</h3>
-      <div class="scan-match-info" id="scan-match-info"></div>
-      <div style="font-size:12px;color:#555;margin-bottom:6px;font-weight:500">Move to stage:</div>
-      <div class="scan-stage-btns" id="scan-stage-btns"></div>
-    </div>
-    <div id="scan-nomatch" style="display:none;background:#fef3c7;border-radius:8px;padding:10px 12px;font-size:13px;color:#92400e;margin-bottom:10px;font-weight:500"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closePanel(&#39;scan-modal&#39;)">Close</button>
-    </div>
-  </div>
-</div>
+<!-- Print output area -->
+<div id="print-area" style="display:none"></div>
 
-<!-- Detail Modal -->
-<div class="modal-overlay" id="detail-modal">
-  <div class="modal" id="detail-content"></div>
-</div>
-
-<script src="./Production Tracker_files/jsQR.min.js.download"></script>
 <script>
-const STAGES=["Engineering","Fabrication","Upgrades","Fireline","Paint","Assembly","QC","Shipping"];
-const SBGL={
-  Engineering:{bg:"#dbeafe",c:"#1e3a5f",b:"#1a6fb5"},
-  Fabrication:{bg:"#d1fae5",c:"#064e2e",b:"#0f6e56"},
-  Upgrades:{bg:"#dcfce7",c:"#14532d",b:"#3b6d11"},
-  Fireline:{bg:"#ede9fe",c:"#2e1065",b:"#534ab7"},
-  Paint:{bg:"#fef3c7",c:"#451a03",b:"#ba7517"},
-  Assembly:{bg:"#fce7f3",c:"#500724",b:"#993556"},
-  QC:{bg:"#ffedd5",c:"#431407",b:"#854f0b"},
-  Shipping:{bg:"#dcfce7",c:"#14532d",b:"#3b6d11"}
-};
-const WARN_MS=72*3600000, DANGER_MS=96*3600000;
+let batchJobs=[];
 
-let jobs=JSON.parse(localStorage.getItem('pt_pwa_jobs')||'[]');
-let activeFilter="All";
-let editingId=null;
-let rushOn=false;
-let scanStream=null,scanInterval=null,scannedVal="";
+function generate(){
+  const num=document.getElementById('inv-num').value.trim();
+  const cust=document.getElementById('cust-name').value.trim();
+  const err=document.getElementById('error');
+  if(!num){err.style.display='block';return;}
+  err.style.display='none';
+  try{
+    JsBarcode('#barcode',num,{
+      format:'CODE128',
+      width:2,
+      height:80,
+      displayValue:true,
+      fontSize:16,
+      fontOptions:'bold',
+      font:'DM Mono, monospace',
+      textMargin:6,
+      margin:10
+    });
+    document.getElementById('meta-num').textContent='#'+num;
+    document.getElementById('meta-cust').textContent=cust||'';
+    document.getElementById('preview').style.display='block';
+  } catch(e){
+    err.textContent='Could not generate barcode for that value. Try a shorter number.';
+    err.style.display='block';
+  }
+}
 
-function save(){localStorage.setItem('pt_pwa_jobs',JSON.stringify(jobs));}
-function stageMs(j){return Date.now()-(j.stageEnteredAt||j.updatedAt||j.createdAt);}
-function lateStatus(j){if(j.stage==='Shipping')return'ok';const ms=stageMs(j);return ms>=DANGER_MS?'danger':ms>=WARN_MS?'warn':'ok';}
-function fmtH(ms){const h=Math.floor(ms/3600000);return h<24?h+'h':Math.floor(h/24)+'d '+(h%24)+'h';}
-function fmtDate(ts){if(!ts)return'—';const d=new Date(ts);const diff=Math.floor((Date.now()-d)/86400000);if(diff===0)return'Today';if(diff===1)return'Yesterday';return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
-function dueStatus(due){if(!due)return'none';const ms=new Date(due+'T23:59:59').getTime()-Date.now();if(ms<0)return'overdue';if(ms<2*86400000)return'soon';return'ok';}
-function fmtDue(due){if(!due)return null;const d=new Date(due+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});const ds=dueStatus(due);if(ds==='overdue')return`<span class="due-overdue">OVERDUE ${d}</span>`;if(ds==='soon')return`<span class="due-soon">Due ${d}</span>`;return`<span>Due ${d}</span>`;}
+function addToBatch(){
+  const num=document.getElementById('inv-num').value.trim();
+  const cust=document.getElementById('cust-name').value.trim();
+  if(!num){document.getElementById('error').style.display='block';return;}
+  if(batchJobs.find(j=>j.num===num)){alert('That job number is already in the batch.');return;}
+  batchJobs.push({num,cust});
+  renderBatch();
+  document.getElementById('inv-num').value='';
+  document.getElementById('cust-name').value='';
+  document.getElementById('preview').style.display='none';
+  document.getElementById('inv-num').focus();
+}
 
-function sortJobs(list){
-  return[...list].sort((a,b)=>{
-    if(a.rush&&!b.rush)return -1;if(!a.rush&&b.rush)return 1;
-    const o={danger:0,warn:1,ok:2};return o[lateStatus(a)]-o[lateStatus(b)];
+function removeBatch(num){
+  batchJobs=batchJobs.filter(j=>j.num!==num);
+  renderBatch();
+}
+
+function renderBatch(){
+  const list=document.getElementById('batch-list');
+  const btn=document.getElementById('batch-print-btn');
+  if(!batchJobs.length){list.innerHTML='';btn.style.display='none';return;}
+  btn.style.display='block';
+  list.innerHTML=batchJobs.map(j=>`
+    <div class="batch-item">
+      <span class="batch-item-num">#${j.num}</span>
+      <span class="batch-item-cust">${j.cust||''}</span>
+      <button class="batch-remove" onclick="removeBatch('${j.num}')" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function printSingle(){
+  const num=document.getElementById('inv-num').value.trim()||document.getElementById('meta-num').textContent.replace('#','');
+  const cust=document.getElementById('cust-name').value.trim()||document.getElementById('meta-cust').textContent;
+  buildPrintArea([{num,cust}]);
+  setTimeout(()=>window.print(),300);
+}
+
+function printBatch(){
+  if(!batchJobs.length){alert('No jobs in batch.');return;}
+  buildPrintArea(batchJobs);
+  setTimeout(()=>window.print(),300);
+}
+
+function buildPrintArea(jobs){
+  const area=document.getElementById('print-area');
+  area.style.display='block';
+  area.innerHTML=`<div class="print-sheet">${jobs.map(j=>`
+    <div class="print-item">
+      <svg id="bc-${j.num.replace(/\W/g,'_')}"></svg>
+      <div class="print-item-meta">#${j.num}${j.cust?' · '+j.cust:''}</div>
+    </div>`).join('')}</div>`;
+  jobs.forEach(j=>{
+    try{
+      JsBarcode(`#bc-${j.num.replace(/\W/g,'_')}`,j.num,{
+        format:'CODE128',width:2,height:70,displayValue:true,
+        fontSize:13,font:'monospace',textMargin:4,margin:8
+      });
+    }catch(e){}
   });
 }
 
-function renderStats(){
-  const rushed=jobs.filter(j=>j.rush).length;
-  const overdue=jobs.filter(j=>dueStatus(j.dueDate)==='overdue').length;
-  const warn=jobs.filter(j=>lateStatus(j)==='warn').length;
-  const danger=jobs.filter(j=>lateStatus(j)==='danger').length;
-  const shipped=jobs.filter(j=>j.stage==='Shipping').length;
-  document.getElementById('stats').innerHTML=`
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-val">${jobs.length}</div></div>
-    <div class="stat"><div class="stat-label">Rush</div><div class="stat-val rush">${rushed}</div></div>
-    <div class="stat"><div class="stat-label">Past due</div><div class="stat-val danger">${overdue}</div></div>
-    <div class="stat"><div class="stat-label">72h+</div><div class="stat-val warn">${warn}</div></div>
-    <div class="stat"><div class="stat-label">96h+</div><div class="stat-val danger">${danger}</div></div>
-    <div class="stat"><div class="stat-label">Shipped</div><div class="stat-val">${shipped}</div></div>`;
-}
-
-function renderTabs(){
-  const filters=["All","Rush","Late",...STAGES];
-  document.getElementById('tabs').innerHTML=filters.map(f=>{
-    let cnt,style='',active=activeFilter===f;
-    if(f==='All'){cnt=jobs.length;style=active?'background:#1a6fb5;color:#fff;border-color:#1a6fb5':'';}
-    else if(f==='Rush'){cnt=jobs.filter(j=>j.rush).length;style=active?'background:#fef2f2;color:#991b1b;border-color:#fca5a5':cnt>0?'color:#991b1b;border-color:#fca5a5':'';}
-    else if(f==='Late'){cnt=jobs.filter(j=>lateStatus(j)!=='ok').length;style=active?'background:#fef3c7;color:#92400e;border-color:#fbbf24':cnt>0?'color:#92400e;border-color:#fbbf24':'';}
-    else{cnt=jobs.filter(j=>j.stage===f).length;const s=SBGL[f];style=active?`background:${s.bg};color:${s.c};border-color:${s.b}`:''}
-    return`<button class="tab" style="${style}" onclick="setFilter('${f}')">${f} (${cnt})</button>`;
-  }).join('');
-}
-
-function setFilter(f){activeFilter=f;render();}
-
-function renderJobs(){
-  let list=activeFilter==='All'?jobs:activeFilter==='Rush'?jobs.filter(j=>j.rush):activeFilter==='Late'?jobs.filter(j=>lateStatus(j)!=='ok'):jobs.filter(j=>j.stage===activeFilter);
-  list=sortJobs(list);
-  if(!list.length){document.getElementById('job-list').innerHTML=`<div class="empty">No jobs here.<br>Tap "+ Job" to add one.</div>`;return;}
-  const s=SBGL;
-  document.getElementById('job-list').innerHTML=list.map(j=>{
-    const st=lateStatus(j),ms=stageMs(j),ds=dueStatus(j.dueDate);
-    let cls='job-card';
-    if(j.rush)cls+=' is-rush';
-    if(st==='danger')cls+=' late-danger';else if(st==='warn')cls+=' late-warn';
-    const stg=s[j.stage];
-    const dueTxt=fmtDue(j.dueDate);
-    return`<div class="${cls}" style="border-left-color:${stg.b}" onclick="openDetail('${j.id}')">
-      <div class="job-card-top">
-        <div class="job-card-name">${j.name}</div>
-        <div class="job-card-badges">
-          ${j.rush?`<span class="rush-badge">RUSH</span>`:''}
-          ${st==='danger'?`<span class="late-badge-danger">96h+</span>`:st==='warn'?`<span class="late-badge-warn">72h+</span>`:''}
-          <span class="badge" style="background:${stg.bg};color:${stg.c}">${j.stage}</span>
-        </div>
-      </div>
-      <div class="job-card-meta">
-        ${j.jobId?`<span>${j.jobId}</span>`:''}
-        ${j.customer?`<span>${j.customer}</span>`:''}
-        <span style="color:${st==='danger'?'#dc2626':st==='warn'?'#92400e':'#777'}">${fmtH(ms)} in stage</span>
-        ${dueTxt?`<span>${dueTxt}</span>`:''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function render(){renderStats();renderTabs();renderJobs();}
-
-function toggleRushUI(){
-  rushOn=!rushOn;
-  document.getElementById('rush-switch').classList.toggle('on',rushOn);
-  document.getElementById('rush-toggle').classList.toggle('active',rushOn);
-}
-
-function openNew(jobId){
-  editingId=jobId||null;
-  const j=jobId?jobs.find(x=>x.id===jobId):null;
-  document.getElementById('new-title').textContent=j?'Edit job':'New job';
-  document.getElementById('nj-name').value=j?j.name:'';
-  document.getElementById('nj-id').value=j?j.jobId:'JOB-'+(jobs.length+1).toString().padStart(3,'0');
-  document.getElementById('nj-cust').value=j?j.customer:'';
-  const sixWeeks=new Date();sixWeeks.setDate(sixWeeks.getDate()+42);
-  const sixWeeksStr=sixWeeks.toISOString().split('T')[0];
-  document.getElementById('nj-due').value=j&&j.dueDate?j.dueDate:sixWeeksStr;
-  const dueDisp=new Date(sixWeeksStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  document.getElementById('due-hint').textContent=j&&j.dueDate?'':'Auto-set to: '+dueDisp;
-  document.getElementById('nj-notes').value=j?j.notes:'';
-  document.getElementById('nj-stage').innerHTML=STAGES.map(s=>`<option ${j&&j.stage===s?'selected':''}>${s}</option>`).join('');
-  rushOn=j?!!j.rush:false;
-  document.getElementById('rush-switch').classList.toggle('on',rushOn);
-  document.getElementById('rush-toggle').classList.toggle('active',rushOn);
-  openPanel('new-modal');
-}
-
-function saveJob(){
-  const name=document.getElementById('nj-name').value.trim();
-  if(!name){alert('Please enter a job name.');return;}
-  const stage=document.getElementById('nj-stage').value;
-  const due=document.getElementById('nj-due').value;
-  if(editingId){
-    const j=jobs.find(x=>x.id===editingId);
-    const sc=j.stage!==stage;
-    j.name=name;j.jobId=document.getElementById('nj-id').value.trim();
-    j.customer=document.getElementById('nj-cust').value.trim();
-    j.dueDate=due;j.notes=document.getElementById('nj-notes').value.trim();
-    const wasRush=j.rush;j.rush=rushOn;j.updatedAt=Date.now();
-    if(sc){j.stage=stage;j.stageEnteredAt=Date.now();j.log=j.log||[];j.log.push({ts:Date.now(),text:`Stage → ${stage}`});}
-    if(!wasRush&&rushOn){j.log=j.log||[];j.log.push({ts:Date.now(),text:'Marked as RUSH'});}
-    if(wasRush&&!rushOn){j.log=j.log||[];j.log.push({ts:Date.now(),text:'RUSH flag removed'});}
-  } else {
-    const job={id:'j'+Date.now(),name,jobId:document.getElementById('nj-id').value.trim(),customer:document.getElementById('nj-cust').value.trim(),stage,dueDate:due,notes:document.getElementById('nj-notes').value.trim(),rush:rushOn,createdAt:Date.now(),updatedAt:Date.now(),stageEnteredAt:Date.now(),log:[{ts:Date.now(),text:'Created at '+stage+(rushOn?' — RUSH':'')}]};
-    jobs.unshift(job);
-  }
-  save();closePanel('new-modal');render();
-}
-
-function openDetail(id){
-  const j=jobs.find(x=>x.id===id);if(!j)return;
-  const st=lateStatus(j),ms=stageMs(j),ds=dueStatus(j.dueDate);
-  const si=STAGES.indexOf(j.stage);
-  const alerts=[
-    j.rush?`<div class="alert rush">RUSH — prioritize through all stages</div>`:'',
-    st==='danger'?`<div class="alert danger">In ${j.stage} for ${fmtH(ms)} — over 96h limit</div>`:'',
-    st==='warn'&&st!=='danger'?`<div class="alert warn">In ${j.stage} for ${fmtH(ms)} — approaching 96h</div>`:'',
-    ds==='overdue'?`<div class="alert due">Past due date — ${new Date(j.dueDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`:'',
-    ds==='soon'?`<div class="alert due">Due soon — ${new Date(j.dueDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`:'',
-  ].join('');
-  const pip=STAGES.map((s,i)=>{
-    const sg=SBGL[s];
-    let style=`background:#f0f0f0;color:#555;border-color:#d0d0d0`;
-    if(i<si)style=`background:#d1fae5;color:#064e2e;border-color:#0f6e56`;
-    if(i===si)style=`background:${sg.bg};color:${sg.c};border-color:${sg.b}`;
-    return`<button class="pip-btn" style="${style}" onclick="moveStage('${j.id}','${s}')">${s}</button>`;
-  }).join('');
-  const log=(j.log||[]).slice().reverse().map(e=>`<div class="log-entry">${fmtDate(e.ts)} — ${e.text}</div>`).join('');
-  document.getElementById('detail-content').innerHTML=`
-    <h2>${j.name}${j.rush?' <span class="rush-badge">RUSH</span>':''}</h2>
-    ${alerts}
-    <div class="detail-grid">
-      <div class="detail-field"><div class="lbl">Job ID / PO #</div><div class="val">${j.jobId||'—'}</div></div>
-      <div class="detail-field"><div class="lbl">Customer</div><div class="val">${j.customer||'—'}</div></div>
-      <div class="detail-field"><div class="lbl">Due date</div><div class="val" style="color:${ds==='overdue'?'#dc2626':ds==='soon'?'#92400e':'#1a1a1a'}">${j.dueDate?new Date(j.dueDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Not set'}</div></div>
-      <div class="detail-field"><div class="lbl">Time in stage</div><div class="val" style="color:${st==='danger'?'#dc2626':st==='warn'?'#92400e':'#1a1a1a'}">${fmtH(ms)}</div></div>
-    </div>
-    <div style="font-size:12px;color:#555;font-weight:500;margin-bottom:6px">Pipeline — tap to move</div>
-    <div class="pipeline">${pip}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-      <button class="btn ${j.rush?'btn-rush':''} btn-sm" onclick="toggleRushJob('${j.id}')">${j.rush?'Remove RUSH':'Mark RUSH'}</button>
-      <button class="btn btn-sm" onclick="closePanel('detail-modal');openNew('${j.id}')">Edit</button>
-    </div>
-    <div style="font-size:12px;color:#555;font-weight:500;margin-bottom:6px">Notes</div>
-    <div style="background:#f7f7f7;border-radius:8px;padding:10px 12px;font-size:13px;color:#555;margin-bottom:10px;white-space:pre-wrap;min-height:36px">${j.notes||'No notes.'}</div>
-    <div class="note-row">
-      <input id="note-inp" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addNote('${j.id}')">
-      <button class="btn btn-sm" onclick="addNote('${j.id}')">Add</button>
-    </div>
-    ${log?`<div style="margin-top:14px"><div style="font-size:12px;color:#555;font-weight:500;margin-bottom:6px">Activity log</div>${log}</div>`:''}
-    <div class="modal-footer">
-      <button class="btn btn-danger btn-sm" onclick="deleteJob('${j.id}')">Delete job</button>
-      <button class="btn btn-sm" onclick="closePanel('detail-modal')">Close</button>
-    </div>`;
-  openPanel('detail-modal');
-}
-
-function moveStage(id,stage){
-  const j=jobs.find(x=>x.id===id);if(!j)return;
-  j.log=j.log||[];j.log.push({ts:Date.now(),text:`${j.stage} → ${stage}`});
-  j.stage=stage;j.updatedAt=Date.now();j.stageEnteredAt=Date.now();
-  save();render();openDetail(id);
-}
-
-function toggleRushJob(id){
-  const j=jobs.find(x=>x.id===id);if(!j)return;
-  j.rush=!j.rush;j.updatedAt=Date.now();
-  j.log=j.log||[];j.log.push({ts:Date.now(),text:j.rush?'Marked RUSH':'RUSH removed'});
-  save();render();openDetail(id);
-}
-
-function addNote(id){
-  const inp=document.getElementById('note-inp'),txt=inp.value.trim();if(!txt)return;
-  const j=jobs.find(x=>x.id===id);if(!j)return;
-  j.log=j.log||[];j.log.push({ts:Date.now(),text:txt});
-  j.notes=(j.notes?j.notes+'\n':'')+txt;j.updatedAt=Date.now();
-  inp.value='';save();render();openDetail(id);
-}
-
-function deleteJob(id){
-  if(!confirm('Delete this job? This cannot be undone.'))return;
-  jobs=jobs.filter(x=>x.id!==id);save();closePanel('detail-modal');render();
-}
-
-function closePanel(id){document.getElementById(id).classList.remove('open');if(id==='scan-modal')stopScan();}
-
-document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)closePanel(o.id);});
-});
-
-// Scanner
-function handleBarcodeImage(input){
-  if(!input.files||!input.files[0])return;
-  const file=input.files[0];
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const img=new Image();
-    img.onload=function(){
-      const canvas=document.getElementById('qr-canvas');
-      canvas.width=img.width;canvas.height=img.height;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0);
-      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      if(typeof jsQR==='undefined'){
-        document.getElementById('scan-error').textContent='Scanner not loaded yet. Try again in a moment.';
-        document.getElementById('scan-error').style.display='block';return;
-      }
-      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'attemptBoth'});
-      if(code&&code.data){
-        onScan(code.data);
-      } else {
-        document.getElementById('scan-error').textContent='Could not read barcode from image. Try holding the camera steadier or use Option 2 to type it in.';
-        document.getElementById('scan-error').style.display='block';
-      }
-    };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);
-  input.value='';
-}
-
-function stopScan(){
-  closePanel('scan-modal');
-}
-
-function openPanel(id){
-  document.getElementById(id).classList.add('open');
-  if(id==='scan-modal'){
-    ['scan-result','scan-error'].forEach(i=>document.getElementById(i).style.display='none');
-    document.getElementById('scan-match').style.display='none';
-    document.getElementById('scan-nomatch').style.display='none';
-    document.getElementById('manual-bc').value='';
-  }
-}
-
-function applyManual(){
-  const v=document.getElementById('manual-bc').value.trim();if(!v)return;
-  scannedVal=v;onScan(v);
-}
-
-function onScan(val){
-  document.getElementById('scan-result').textContent='Scanned: '+val;
-  document.getElementById('scan-result').style.display='block';
-  const match=jobs.find(j=>j.jobId&&j.jobId.trim().toLowerCase()===val.trim().toLowerCase());
-  if(match){
-    document.getElementById('scan-nomatch').style.display='none';
-    document.getElementById('scan-match').style.display='block';
-    const sg=SBGL[match.stage];
-    document.getElementById('scan-match-info').innerHTML=`<strong>${match.name}</strong>${match.rush?' <span class="rush-badge">RUSH</span>':''}<br><span style="color:#555">${match.jobId} · <span style="background:${sg.bg};color:${sg.c};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">${match.stage}</span></span>`;
-    document.getElementById('scan-stage-btns').innerHTML=STAGES.map(s=>{
-      const sg2=SBGL[s];
-      return`<button class="btn btn-sm" style="${s===match.stage?'opacity:.4':''}" ${s===match.stage?'disabled':''} onclick="scanMove('${match.id}','${s}')">${s}</button>`;
-    }).join('');
-  } else {
-    document.getElementById('scan-match').style.display='none';
-    document.getElementById('scan-nomatch').style.display='block';
-    document.getElementById('scan-nomatch').textContent='No job found for: '+val+'. Create a new job using this as the Job ID.';
-  }
-}
-
-function scanMove(id,stage){
-  const j=jobs.find(x=>x.id===id);if(!j)return;
-  j.log=j.log||[];j.log.push({ts:Date.now(),text:`${j.stage} → ${stage} (barcode scan)`});
-  j.stage=stage;j.updatedAt=Date.now();j.stageEnteredAt=Date.now();
-  save();render();closePanel('scan-modal');
-  setTimeout(()=>openDetail(id),200);
-}
-
-render();
-setInterval(render,60000);
+window.onafterprint=function(){
+  document.getElementById('print-area').style.display='none';
+  document.getElementById('print-area').innerHTML='';
+};
 </script>
 
 
