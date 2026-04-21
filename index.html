@@ -1,8 +1,7 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
+<!-- saved from url=(0056)file:///C:/Users/CNC/Downloads/production-tracker_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<html lang="en">
-<head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -91,7 +90,7 @@ a{color:inherit;text-decoration:none}
 .rush-toggle-text .sub{font-size:12px;color:#777}
 .toggle-switch{width:44px;height:24px;background:#d0d0d0;border-radius:12px;position:relative;flex-shrink:0;transition:background .2s}
 .toggle-switch.on{background:#dc2626}
-.toggle-switch::after{content:’’;position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
+.toggle-switch::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s}
 .toggle-switch.on::after{transform:translateX(20px)}
 
 /* Pipeline */
@@ -135,14 +134,14 @@ a{color:inherit;text-decoration:none}
 
 /* Stage colors */
 :root{
-–eng-bg:#dbeafe;–eng-c:#1e3a5f;–eng-b:#1a6fb5;
-–fab-bg:#d1fae5;–fab-c:#064e2e;–fab-b:#0f6e56;
-–upg-bg:#dcfce7;–upg-c:#14532d;–upg-b:#3b6d11;
-–fir-bg:#ede9fe;–fir-c:#2e1065;–fir-b:#534ab7;
-–pai-bg:#fef3c7;–pai-c:#451a03;–pai-b:#ba7517;
-–asm-bg:#fce7f3;–asm-c:#500724;–asm-b:#993556;
-–qc-bg:#ffedd5;–qc-c:#431407;–qc-b:#854f0b;
-–shi-bg:#dcfce7;–shi-c:#14532d;–shi-b:#3b6d11;
+  --eng-bg:#dbeafe;--eng-c:#1e3a5f;--eng-b:#1a6fb5;
+  --fab-bg:#d1fae5;--fab-c:#064e2e;--fab-b:#0f6e56;
+  --upg-bg:#dcfce7;--upg-c:#14532d;--upg-b:#3b6d11;
+  --fir-bg:#ede9fe;--fir-c:#2e1065;--fir-b:#534ab7;
+  --pai-bg:#fef3c7;--pai-c:#451a03;--pai-b:#ba7517;
+  --asm-bg:#fce7f3;--asm-c:#500724;--asm-b:#993556;
+  --qc-bg:#ffedd5;--qc-c:#431407;--qc-b:#854f0b;
+  --shi-bg:#dcfce7;--shi-c:#14532d;--shi-b:#3b6d11;
 }
 
 /* Install banner */
@@ -151,21 +150,20 @@ a{color:inherit;text-decoration:none}
 .install-banner .steps{margin-top:6px;color:#3b5a8a;line-height:1.8}
 .install-close{float:right;cursor:pointer;color:#3b5a8a;font-size:18px;line-height:1;margin-left:8px}
 </style>
-
 </head>
 <body>
 
 <div class="nav">
   <h1>Production Tracker</h1>
   <div class="nav-btns">
-    <button class="btn btn-scan btn-sm" onclick="openPanel('scan')">Scan</button>
+    <button class="btn btn-scan btn-sm" onclick="openPanel(&#39;scan&#39;)">Scan</button>
     <button class="btn btn-primary btn-sm" onclick="openNew()">+ Job</button>
   </div>
 </div>
 
 <div class="page">
   <div class="install-banner" id="install-banner">
-    <span class="install-close" onclick="document.getElementById('install-banner').style.display='none'">×</span>
+    <span class="install-close" onclick="document.getElementById(&#39;install-banner&#39;).style.display=&#39;none&#39;">×</span>
     <strong>Install this app on your phone</strong>
     <div class="steps">
       iPhone: Tap the Share button in Safari → "Add to Home Screen"<br>
@@ -173,7 +171,13 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
-  <div class="stats" id="stats"></div>
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-val">0</div></div>
+    <div class="stat"><div class="stat-label">Rush</div><div class="stat-val rush">0</div></div>
+    <div class="stat"><div class="stat-label">Past due</div><div class="stat-val danger">0</div></div>
+    <div class="stat"><div class="stat-label">72h+</div><div class="stat-val warn">0</div></div>
+    <div class="stat"><div class="stat-label">96h+</div><div class="stat-val danger">0</div></div>
+    <div class="stat"><div class="stat-label">Shipped</div><div class="stat-val">0</div></div></div>
 
   <div class="legend">
     <span class="legend-item" style="background:#fef2f2;color:#991b1b;border:1px solid #fca5a5">RUSH</span>
@@ -182,12 +186,11 @@ a{color:inherit;text-decoration:none}
     <span class="legend-item" style="background:#fef3c7;color:#92400e">Due soon</span>
   </div>
 
-  <div class="tabs" id="tabs"></div>
-  <div class="jobs-list" id="job-list"></div>
+  <div class="tabs" id="tabs"><button class="tab" style="background:#1a6fb5;color:#fff;border-color:#1a6fb5" onclick="setFilter(&#39;All&#39;)">All (0)</button><button class="tab" style="" onclick="setFilter(&#39;Rush&#39;)">Rush (0)</button><button class="tab" style="" onclick="setFilter(&#39;Late&#39;)">Late (0)</button><button class="tab" style="" onclick="setFilter(&#39;Engineering&#39;)">Engineering (0)</button><button class="tab" style="" onclick="setFilter(&#39;Fabrication&#39;)">Fabrication (0)</button><button class="tab" style="" onclick="setFilter(&#39;Upgrades&#39;)">Upgrades (0)</button><button class="tab" style="" onclick="setFilter(&#39;Fireline&#39;)">Fireline (0)</button><button class="tab" style="" onclick="setFilter(&#39;Paint&#39;)">Paint (0)</button><button class="tab" style="" onclick="setFilter(&#39;Assembly&#39;)">Assembly (0)</button><button class="tab" style="" onclick="setFilter(&#39;QC&#39;)">QC (0)</button><button class="tab" style="" onclick="setFilter(&#39;Shipping&#39;)">Shipping (0)</button></div>
+  <div class="jobs-list" id="job-list"><div class="empty">No jobs here.<br>Tap "+ Job" to add one.</div></div>
 </div>
 
 <!-- New/Edit Job Modal -->
-
 <div class="modal-overlay" id="new-modal">
   <div class="modal">
     <h2 id="new-title">New job</h2>
@@ -209,25 +212,32 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="field"><label>Notes</label><textarea id="nj-notes" placeholder="Any details…"></textarea></div>
     <div class="modal-footer">
-      <button class="btn" onclick="closePanel('new-modal')">Cancel</button>
+      <button class="btn" onclick="closePanel(&#39;new-modal&#39;)">Cancel</button>
       <button class="btn btn-primary" onclick="saveJob()">Save</button>
     </div>
   </div>
 </div>
 
 <!-- Scan Modal -->
-
 <div class="modal-overlay" id="scan-modal">
   <div class="modal">
     <h2>Scan barcode</h2>
     <div class="scanner-wrap">
-      <h3>Point camera at barcode</h3>
-      <video id="qr-video" autoplay playsinline muted></video>
+      <h3>Option 1 — Use camera to scan</h3>
+      <p style="font-size:12px;color:#555;margin-bottom:10px">Tap the button below to open your camera and scan a barcode on the invoice.</p>
+      <label style="display:block;background:#1a8a5a;color:#fff;border-radius:8px;padding:12px;text-align:center;font-size:15px;font-weight:600;cursor:pointer">
+        Open Camera to Scan
+        <input type="file" id="barcode-file" accept="image/*" capture="environment" style="display:none" onchange="handleBarcodeImage(this)">
+      </label>
       <canvas id="qr-canvas" style="display:none"></canvas>
-      <div class="scan-result" id="scan-result"></div>
-      <div class="scan-error" id="scan-error"></div>
+      <div class="scan-result" id="scan-result" style="display:none"></div>
+      <div class="scan-error" id="scan-error" style="display:none"></div>
+    </div>
+    <div class="scanner-wrap" style="margin-top:10px">
+      <h3>Option 2 — Type it in</h3>
+      <p style="font-size:12px;color:#555;margin-bottom:8px">Type or paste the invoice / job number manually.</p>
       <div class="manual-row">
-        <input id="manual-bc" placeholder="Or type / paste barcode here" autocomplete="off" onkeydown="if(event.key==='Enter')applyManual()">
+        <input id="manual-bc" placeholder="e.g. 11047" autocomplete="off" onkeydown="if(event.key===&#39;Enter&#39;)applyManual()">
         <button class="btn" onclick="applyManual()">Use</button>
       </div>
     </div>
@@ -239,19 +249,17 @@ a{color:inherit;text-decoration:none}
     </div>
     <div id="scan-nomatch" style="display:none;background:#fef3c7;border-radius:8px;padding:10px 12px;font-size:13px;color:#92400e;margin-bottom:10px;font-weight:500"></div>
     <div class="modal-footer">
-      <button class="btn" onclick="stopScan()">Close</button>
+      <button class="btn" onclick="closePanel(&#39;scan-modal&#39;)">Close</button>
     </div>
   </div>
 </div>
 
 <!-- Detail Modal -->
-
 <div class="modal-overlay" id="detail-modal">
   <div class="modal" id="detail-content"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
+<script src="./Production Tracker_files/jsQR.min.js.download"></script>
 <script>
 const STAGES=["Engineering","Fabrication","Upgrades","Fireline","Paint","Assembly","QC","Shipping"];
 const SBGL={
@@ -479,43 +487,48 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 });
 
 // Scanner
-function startScan(){
-  ['scan-result','scan-error'].forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById('scan-match').style.display='none';
-  document.getElementById('scan-nomatch').style.display='none';
-  scannedVal='';
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    document.getElementById('scan-error').textContent='Camera not available. Use manual entry below.';
-    document.getElementById('scan-error').style.display='block';return;
-  }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(s=>{
-    scanStream=s;const v=document.getElementById('qr-video');v.srcObject=s;v.play();
-    scanInterval=setInterval(scanFrame,300);
-  }).catch(()=>{
-    document.getElementById('scan-error').textContent='Camera access denied. Use manual entry below.';
-    document.getElementById('scan-error').style.display='block';
-  });
-}
-
-function scanFrame(){
-  const v=document.getElementById('qr-video'),c=document.getElementById('qr-canvas');
-  if(v.readyState!==v.HAVE_ENOUGH_DATA)return;
-  c.width=v.videoWidth;c.height=v.videoHeight;
-  const ctx=c.getContext('2d');ctx.drawImage(v,0,0,c.width,c.height);
-  if(typeof jsQR==='undefined')return;
-  const code=jsQR(ctx.getImageData(0,0,c.width,c.height).data,c.width,c.height,{inversionAttempts:'dontInvert'});
-  if(code&&code.data&&code.data!==scannedVal){scannedVal=code.data;onScan(code.data);}
+function handleBarcodeImage(input){
+  if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.getElementById('qr-canvas');
+      canvas.width=img.width;canvas.height=img.height;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      if(typeof jsQR==='undefined'){
+        document.getElementById('scan-error').textContent='Scanner not loaded yet. Try again in a moment.';
+        document.getElementById('scan-error').style.display='block';return;
+      }
+      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'attemptBoth'});
+      if(code&&code.data){
+        onScan(code.data);
+      } else {
+        document.getElementById('scan-error').textContent='Could not read barcode from image. Try holding the camera steadier or use Option 2 to type it in.';
+        document.getElementById('scan-error').style.display='block';
+      }
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value='';
 }
 
 function stopScan(){
-  clearInterval(scanInterval);scanInterval=null;
-  if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}
-  const v=document.getElementById('qr-video');if(v)v.srcObject=null;
+  closePanel('scan-modal');
 }
 
 function openPanel(id){
   document.getElementById(id).classList.add('open');
-  if(id==='scan-modal')startScan();
+  if(id==='scan-modal'){
+    ['scan-result','scan-error'].forEach(i=>document.getElementById(i).style.display='none');
+    document.getElementById('scan-match').style.display='none';
+    document.getElementById('scan-nomatch').style.display='none';
+    document.getElementById('manual-bc').value='';
+  }
 }
 
 function applyManual(){
@@ -555,5 +568,5 @@ render();
 setInterval(render,60000);
 </script>
 
-</body>
-</html>
+
+</body></html>
