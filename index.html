@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0060)file:///C:/Users/Brandon/Downloads/production-tracker_2.html -->
+<!-- saved from url=(0060)file:///C:/Users/Brandon/Downloads/production-tracker_4.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -112,7 +112,11 @@ a{color:inherit;text-decoration:none}
 .alert.due{background:#fef3c7;color:#92400e}
 
 /* Log */
-.log-entry{font-size:12px;color:#777;padding:5px 0;border-bottom:1px solid #f0f0f0}
+.photo-thumb{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #e0e0e0;cursor:pointer}
+.photo-wrap{position:relative;display:inline-block}
+.photo-remove{position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0}
+.photos-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+
 .log-entry:last-child{border-bottom:none}
 
 /* Note row */
@@ -156,7 +160,7 @@ a{color:inherit;text-decoration:none}
 <div class="nav">
   <h1>Production Tracker</h1>
   <div class="nav-btns">
-    <button class="btn btn-scan btn-sm" onclick="openPanel(&#39;scan-modal&#39;)">Scan</button>
+    <button class="btn btn-scan btn-sm" onclick="openPanel(&#39;scan-modal&#39;)">Find Job</button>
     <button class="btn btn-primary btn-sm" onclick="openNew()">+ Job</button>
   </div>
 </div>
@@ -208,9 +212,18 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="two-col">
       <div class="field"><label>Stage</label><select id="nj-stage"></select></div>
-      <div class="field"><label>Due date <span style="font-size:11px;color:#1a8a5a;font-weight:500">(auto-set to 6 weeks from today)</span></label><input type="date" id="nj-due"><div style="font-size:11px;color:#777;margin-top:4px" id="due-hint"></div></div>
+      <div class="field"><label>Start date</label><input type="date" id="nj-start" onchange="updateDueFromStart()"><div style="font-size:11px;color:#777;margin-top:4px" id="start-hint"></div></div>
     </div>
+    <div class="field"><label>Due date <span style="font-size:11px;color:#1a8a5a;font-weight:500">(auto-set 6 weeks from start)</span></label><input type="date" id="nj-due"><div style="font-size:11px;color:#777;margin-top:4px" id="due-hint"></div></div>
     <div class="field"><label>Notes</label><textarea id="nj-notes" placeholder="Any details…"></textarea></div>
+    <div class="field">
+      <label>Photos</label>
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px dashed #d0d0d0;border-radius:8px;cursor:pointer;color:#555;font-size:13px;background:#fafaf8">
+        <span style="font-size:20px">📷</span> Tap to add photo
+        <input type="file" id="nj-photo" accept="image/*" multiple="" style="display:none" onchange="previewPhotos(this)">
+      </label>
+      <div id="nj-photo-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+    </div>
     <div class="modal-footer">
       <button class="btn" onclick="closePanel(&#39;new-modal&#39;)">Cancel</button>
       <button class="btn btn-primary" onclick="saveJob()">Save</button>
@@ -225,7 +238,7 @@ a{color:inherit;text-decoration:none}
     <div class="scanner-wrap">
       <h3>Enter invoice number</h3>
       <p style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.5">Type the invoice number to instantly find and update the job stage.</p>
-      <input id="manual-bc" placeholder="e.g. 11047" autocomplete="off" type="number" inputmode="numeric" style="width:100%;padding:14px;border:1px solid #d0d0d0;border-radius:8px;font-size:28px;font-family:inherit;text-align:center;letter-spacing:3px;color:#1a1a1a;background:#fff;margin-bottom:10px" onkeydown="if(event.key===&#39;Enter&#39;)applyManual()">
+      <input id="manual-bc" placeholder="Invoice # or customer name" autocomplete="off" type="text" inputmode="text" style="width:100%;padding:14px;border:1px solid #d0d0d0;border-radius:8px;font-size:20px;font-family:inherit;text-align:center;color:#1a1a1a;background:#fff;margin-bottom:10px" onkeydown="if(event.key===&#39;Enter&#39;)applyManual()">
       <button class="btn btn-scan" style="width:100%;padding:13px;font-size:15px" onclick="applyManual()">Find Job</button>
       <div class="scan-result" id="scan-result" style="display:none;margin-top:8px;padding:9px 12px;background:#ecfdf5;border-radius:8px;font-size:13px;color:#065f46;font-weight:500"></div>
       <div class="scan-error" id="scan-error" style="display:none;margin-top:8px;padding:9px 12px;background:#fef2f2;border-radius:8px;font-size:13px;color:#991b1b"></div>
@@ -352,20 +365,74 @@ function toggleRushUI(){
   document.getElementById('rush-toggle').classList.toggle('active',rushOn);
 }
 
+function updateDueFromStart(){
+  const start=document.getElementById('nj-start').value;
+  if(!start)return;
+  const d=new Date(start+'T12:00:00');
+  d.setDate(d.getDate()+42);
+  const dueStr=d.toISOString().split('T')[0];
+  document.getElementById('nj-due').value=dueStr;
+  document.getElementById('due-hint').textContent='Auto-set to: '+d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+}
+
+let pendingPhotos=[];
+
+function previewPhotos(input){
+  if(!input.files)return;
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      pendingPhotos.push(e.target.result);
+      renderPhotoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoPreview(){
+  const wrap=document.getElementById('nj-photo-preview');
+  wrap.innerHTML=pendingPhotos.map((p,i)=>`
+    <div class="photo-wrap">
+      <img src="${p}" class="photo-thumb" onclick="viewPhoto('${p}')">
+      <button class="photo-remove" onclick="removePendingPhoto(${i})">×</button>
+    </div>`).join('');
+}
+
+function removePendingPhoto(i){
+  pendingPhotos.splice(i,1);
+  renderPhotoPreview();
+}
+
+function viewPhoto(src){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML=`<img src="${src}" style="max-width:100%;max-height:90vh;border-radius:8px"><button onclick="this.parentElement.remove()" style="position:absolute;top:16px;right:16px;background:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer">×</button>`;
+  document.body.appendChild(ov);
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+}
+
 function openNew(jobId){
   editingId=jobId||null;
+  pendingPhotos=[];
   const j=jobId?jobs.find(x=>x.id===jobId):null;
   document.getElementById('new-title').textContent=j?'Edit job':'New job';
   document.getElementById('nj-name').value=j?j.name:'';
   document.getElementById('nj-id').value=j?j.jobId:'JOB-'+(jobs.length+1).toString().padStart(3,'0');
   document.getElementById('nj-cust').value=j?j.customer:'';
-  const sixWeeks=new Date();sixWeeks.setDate(sixWeeks.getDate()+42);
+  // Start date
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('nj-start').value=j&&j.startDate?j.startDate:today;
+  // Due date — 6 weeks from start
+  const sixWeeks=new Date(document.getElementById('nj-start').value+'T12:00:00');
+  sixWeeks.setDate(sixWeeks.getDate()+42);
   const sixWeeksStr=sixWeeks.toISOString().split('T')[0];
   document.getElementById('nj-due').value=j&&j.dueDate?j.dueDate:sixWeeksStr;
-  const dueDisp=new Date(sixWeeksStr+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  document.getElementById('due-hint').textContent=j&&j.dueDate?'':'Auto-set to: '+dueDisp;
+  document.getElementById('due-hint').textContent='Auto-set to: '+sixWeeks.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   document.getElementById('nj-notes').value=j?j.notes:'';
   document.getElementById('nj-stage').innerHTML=STAGES.map(s=>`<option ${j&&j.stage===s?'selected':''}>${s}</option>`).join('');
+  // Load existing photos
+  if(j&&j.photos){pendingPhotos=[...j.photos];}
+  renderPhotoPreview();
   rushOn=j?!!j.rush:false;
   document.getElementById('rush-switch').classList.toggle('on',rushOn);
   document.getElementById('rush-toggle').classList.toggle('active',rushOn);
@@ -377,18 +444,21 @@ function saveJob(){
   if(!name){alert('Please enter a job name.');return;}
   const stage=document.getElementById('nj-stage').value;
   const due=document.getElementById('nj-due').value;
+  const start=document.getElementById('nj-start').value;
+  const allPhotos=pendingPhotos.slice();
   if(editingId){
     const j=jobs.find(x=>x.id===editingId);
     const sc=j.stage!==stage;
     j.name=name;j.jobId=document.getElementById('nj-id').value.trim();
     j.customer=document.getElementById('nj-cust').value.trim();
-    j.dueDate=due;j.notes=document.getElementById('nj-notes').value.trim();
+    j.startDate=start;j.dueDate=due;j.notes=document.getElementById('nj-notes').value.trim();
+    j.photos=allPhotos;
     const wasRush=j.rush;j.rush=rushOn;j.updatedAt=Date.now();
     if(sc){j.stage=stage;j.stageEnteredAt=Date.now();j.log=j.log||[];j.log.push({ts:Date.now(),text:`Stage → ${stage}`});}
     if(!wasRush&&rushOn){j.log=j.log||[];j.log.push({ts:Date.now(),text:'Marked as RUSH'});}
     if(wasRush&&!rushOn){j.log=j.log||[];j.log.push({ts:Date.now(),text:'RUSH flag removed'});}
   } else {
-    const job={id:'j'+Date.now(),name,jobId:document.getElementById('nj-id').value.trim(),customer:document.getElementById('nj-cust').value.trim(),stage,dueDate:due,notes:document.getElementById('nj-notes').value.trim(),rush:rushOn,createdAt:Date.now(),updatedAt:Date.now(),stageEnteredAt:Date.now(),log:[{ts:Date.now(),text:'Created at '+stage+(rushOn?' — RUSH':'')}]};
+    const job={id:'j'+Date.now(),name,jobId:document.getElementById('nj-id').value.trim(),customer:document.getElementById('nj-cust').value.trim(),stage,startDate:start,dueDate:due,notes:document.getElementById('nj-notes').value.trim(),photos:allPhotos,rush:rushOn,createdAt:Date.now(),updatedAt:Date.now(),stageEnteredAt:Date.now(),log:[{ts:Date.now(),text:'Created at '+stage+(rushOn?' — RUSH':'')}]};
     jobs.unshift(job);
   }
   save();closePanel('new-modal');render();
@@ -413,14 +483,25 @@ function openDetail(id){
     return`<button class="pip-btn" style="${style}" onclick="moveStage('${j.id}','${s}')">${s}</button>`;
   }).join('');
   const log=(j.log||[]).slice().reverse().map(e=>`<div class="log-entry">${fmtDate(e.ts)} — ${e.text}</div>`).join('');
+  const photosHtml=j.photos&&j.photos.length?`
+    <div style="font-size:12px;color:#555;font-weight:500;margin-bottom:6px">Photos (${j.photos.length})</div>
+    <div class="photos-grid">${j.photos.map(p=>`<img src="${p}" class="photo-thumb" onclick="viewPhoto('${p}')">`).join('')}</div>
+    <div style="margin-bottom:10px"></div>`:'';
+  const addPhotoHtml=`
+    <label style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px dashed #d0d0d0;border-radius:8px;cursor:pointer;color:#555;font-size:13px;background:#fafaf8;margin-bottom:10px">
+      📷 Add photo
+      <input type="file" accept="image/*" multiple style="display:none" onchange="addPhotosToJob('${j.id}',this)">
+    </label>`;
   document.getElementById('detail-content').innerHTML=`
     <h2>${j.name}${j.rush?' <span class="rush-badge">RUSH</span>':''}</h2>
     ${alerts}
     <div class="detail-grid">
       <div class="detail-field"><div class="lbl">Job ID / PO #</div><div class="val">${j.jobId||'—'}</div></div>
       <div class="detail-field"><div class="lbl">Customer</div><div class="val">${j.customer||'—'}</div></div>
+      <div class="detail-field"><div class="lbl">Start date</div><div class="val">${j.startDate?new Date(j.startDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—'}</div></div>
       <div class="detail-field"><div class="lbl">Due date</div><div class="val" style="color:${ds==='overdue'?'#dc2626':ds==='soon'?'#92400e':'#1a1a1a'}">${j.dueDate?new Date(j.dueDate+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Not set'}</div></div>
       <div class="detail-field"><div class="lbl">Time in stage</div><div class="val" style="color:${st==='danger'?'#dc2626':st==='warn'?'#92400e':'#1a1a1a'}">${fmtH(ms)}</div></div>
+      <div class="detail-field"><div class="lbl">Days since start</div><div class="val">${j.startDate?Math.floor((Date.now()-new Date(j.startDate+'T12:00:00'))/86400000)+'d':'—'}</div></div>
     </div>
     <div style="font-size:12px;color:#555;font-weight:500;margin-bottom:6px">Pipeline — tap to move</div>
     <div class="pipeline">${pip}</div>
@@ -428,6 +509,7 @@ function openDetail(id){
       <button class="btn ${j.rush?'btn-rush':''} btn-sm" onclick="toggleRushJob('${j.id}')">${j.rush?'Remove RUSH':'Mark RUSH'}</button>
       <button class="btn btn-sm" onclick="closePanel('detail-modal');openNew('${j.id}')">Edit</button>
     </div>
+    ${photosHtml}${addPhotoHtml}
     <div style="font-size:12px;color:#555;font-weight:500;margin-bottom:6px">Notes</div>
     <div style="background:#f7f7f7;border-radius:8px;padding:10px 12px;font-size:13px;color:#555;margin-bottom:10px;white-space:pre-wrap;min-height:36px">${j.notes||'No notes.'}</div>
     <div class="note-row">
@@ -440,6 +522,25 @@ function openDetail(id){
       <button class="btn btn-sm" onclick="closePanel('detail-modal')">Close</button>
     </div>`;
   openPanel('detail-modal');
+}
+
+function addPhotosToJob(id,input){
+  if(!input.files)return;
+  const j=jobs.find(x=>x.id===id);if(!j)return;
+  j.photos=j.photos||[];
+  let loaded=0;
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      j.photos.push(e.target.result);
+      loaded++;
+      if(loaded===input.files.length){
+        j.log=j.log||[];j.log.push({ts:Date.now(),text:`Added ${input.files.length} photo(s)`});
+        j.updatedAt=Date.now();save();render();openDetail(id);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function moveStage(id,stage){
@@ -493,22 +594,37 @@ function applyManual(){
 }
 
 function onScan(val){
-  document.getElementById('scan-result').textContent='Scanned: '+val;
+  const v=val.trim().toLowerCase();
+  document.getElementById('scan-result').textContent='Searching: '+val;
   document.getElementById('scan-result').style.display='block';
-  const match=jobs.find(j=>j.jobId&&j.jobId.trim().toLowerCase()===val.trim().toLowerCase());
-  if(match){
+  // Match by invoice/job ID, job name, or customer name
+  const matches=jobs.filter(j=>
+    (j.jobId&&j.jobId.trim().toLowerCase().includes(v))||
+    (j.name&&j.name.trim().toLowerCase().includes(v))||
+    (j.customer&&j.customer.trim().toLowerCase().includes(v))
+  );
+  if(matches.length===1){
+    // Single match — show it directly
+    const match=matches[0];
     document.getElementById('scan-nomatch').style.display='none';
     document.getElementById('scan-match').style.display='block';
     const sg=SBGL[match.stage];
-    document.getElementById('scan-match-info').innerHTML=`<strong>${match.name}</strong>${match.rush?' <span class="rush-badge">RUSH</span>':''}<br><span style="color:#555">${match.jobId} · <span style="background:${sg.bg};color:${sg.c};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">${match.stage}</span></span>`;
-    document.getElementById('scan-stage-btns').innerHTML=STAGES.map(s=>{
-      const sg2=SBGL[s];
-      return`<button class="btn btn-sm" style="${s===match.stage?'opacity:.4':''}" ${s===match.stage?'disabled':''} onclick="scanMove('${match.id}','${s}')">${s}</button>`;
-    }).join('');
+    document.getElementById('scan-match-info').innerHTML=`<strong>${match.name}</strong>${match.rush?' <span class="rush-badge">RUSH</span>':''}<br><span style="color:#555">${match.jobId||''} ${match.customer?'· '+match.customer:''} · <span style="background:${sg.bg};color:${sg.c};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">${match.stage}</span></span>`;
+    document.getElementById('scan-stage-btns').innerHTML=STAGES.map(s=>`<button class="btn btn-sm" style="${s===match.stage?'opacity:.4':''}" ${s===match.stage?'disabled':''} onclick="scanMove('${match.id}','${s}')">${s}</button>`).join('');
+  } else if(matches.length>1){
+    // Multiple matches — list them all
+    document.getElementById('scan-match').style.display='none';
+    document.getElementById('scan-nomatch').style.display='block';
+    document.getElementById('scan-nomatch').style.background='#eff6ff';
+    document.getElementById('scan-nomatch').style.color='#1e3a5f';
+    document.getElementById('scan-nomatch').innerHTML=`${matches.length} jobs found — tap one to open:<br><br>`+
+      matches.map(m=>{const sg=SBGL[m.stage];return`<button onclick="closePanel('scan-modal');setTimeout(()=>openDetail('${m.id}'),100)" style="display:block;width:100%;text-align:left;background:#fff;border:1px solid #d0d0d0;border-radius:8px;padding:8px 12px;margin-bottom:6px;cursor:pointer;font-family:inherit;font-size:13px"><strong>${m.name}</strong> <span style="background:${sg.bg};color:${sg.c};padding:1px 7px;border-radius:20px;font-size:11px;font-weight:600">${m.stage}</span><br><span style="color:#777;font-size:12px">${m.jobId||''} ${m.customer?'· '+m.customer:''}</span></button>`;}).join('');
   } else {
     document.getElementById('scan-match').style.display='none';
     document.getElementById('scan-nomatch').style.display='block';
-    document.getElementById('scan-nomatch').textContent='No job found for: '+val+'. Create a new job using this as the Job ID.';
+    document.getElementById('scan-nomatch').style.background='#fef3c7';
+    document.getElementById('scan-nomatch').style.color='#92400e';
+    document.getElementById('scan-nomatch').textContent='No job found for "'+val+'". Check the invoice number or name and try again.';
   }
 }
 
