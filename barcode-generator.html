@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!-- saved from url=(0084)file:///C:/Users/Brandon/Desktop/Production%20tracker/Job%20Barcode%20Generator.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Barcode Generator</title>
+<script src="./barcode-generator_files/JsBarcode.all.min.js.download"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f0ece4;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 16px}
+
+.header{text-align:center;margin-bottom:36px}
+.header h1{font-size:28px;font-weight:600;color:#1a1a1a;letter-spacing:-0.5px}
+.header p{font-size:14px;color:#777;margin-top:6px}
+
+.card{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:480px;border:1px solid #e0dbd2}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.field input{width:100%;padding:12px 14px;border:1px solid #d5d0c8;border-radius:10px;font-size:16px;font-family:'DM Mono',monospace;color:#1a1a1a;background:#fafaf8;transition:border-color .15s}
+.field input:focus{outline:none;border-color:#1a1a1a;background:#fff}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.btn-generate{width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .15s;margin-top:4px}
+.btn-generate:hover{opacity:.85}
+.btn-generate:active{opacity:.7}
+
+.preview{margin-top:24px;display:none}
+.preview-label{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+
+.barcode-card{background:#fff;border:1px solid #e0dbd2;border-radius:12px;padding:20px;text-align:center}
+.barcode-card svg{max-width:100%;height:auto}
+.barcode-meta{margin-top:12px;display:flex;justify-content:space-between;font-size:12px;color:#888;font-family:'DM Mono',monospace}
+
+.btn-print{width:100%;background:#f0ece4;color:#1a1a1a;border:1px solid #d5d0c8;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:12px;transition:background .15s}
+.btn-print:hover{background:#e5e0d8}
+
+.batch-section{margin-top:24px;border-top:1px solid #e0dbd2;padding-top:20px}
+.batch-label{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.batch-hint{font-size:12px;color:#999;margin-bottom:10px}
+.btn-add{background:transparent;border:1px dashed #bbb;border-radius:8px;padding:8px 14px;font-size:13px;color:#777;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-add:hover{background:#f7f5f0;border-color:#999}
+.batch-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.batch-item{display:flex;align-items:center;gap:8px;background:#fafaf8;border:1px solid #e0dbd2;border-radius:8px;padding:8px 12px}
+.batch-item-num{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#1a1a1a;flex:1}
+.batch-item-cust{font-size:12px;color:#999;flex:1}
+.batch-remove{background:transparent;border:none;color:#bbb;cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+.batch-remove:hover{color:#dc2626}
+.btn-print-all{width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px}
+.btn-print-all:hover{opacity:.85}
+
+.error{background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;color:#991b1b;margin-top:8px;display:none}
+
+/* Print styles */
+@media print{
+  body{background:#fff;padding:0}
+  .header,.card .field,.btn-generate,.btn-print,.btn-print-all,.batch-section,.preview-label,.barcode-meta,.no-print{display:none!important}
+  .preview{display:block!important;margin:0;padding:0}
+  .barcode-card{border:none;padding:8px;page-break-inside:avoid}
+  .print-sheet{display:flex!important;flex-wrap:wrap;gap:16px;padding:16px}
+  .print-item{border:1px solid #ccc;border-radius:8px;padding:12px;text-align:center;width:200px;page-break-inside:avoid}
+  .print-item svg{width:180px}
+  .print-item-meta{font-size:11px;color:#333;margin-top:6px;font-family:monospace}
+}
+</style>
+</head>
+<body>
+
+<div class="header no-print">
+  <h1>Job Barcode Generator</h1>
+  <p>Generate and print barcodes for your production jobs</p>
+</div>
+
+<div class="card no-print">
+  <div class="two-col">
+    <div class="field">
+      <label>Invoice / Job #</label>
+      <input id="inv-num" type="text" placeholder="11047" maxlength="20" onkeydown="if(event.key===&#39;Enter&#39;)generate()">
+    </div>
+    <div class="field">
+      <label>Customer name</label>
+      <input id="cust-name" type="text" placeholder="Smith Co." onkeydown="if(event.key===&#39;Enter&#39;)generate()">
+    </div>
+  </div>
+  <button class="btn-generate" onclick="generate()">Generate Barcode</button>
+  <div class="error" id="error">Please enter an invoice or job number.</div>
+
+  <div class="preview" id="preview">
+    <div class="preview-label">Preview</div>
+    <div class="barcode-card">
+      <svg id="barcode"></svg>
+      <div class="barcode-meta">
+        <span id="meta-num"></span>
+        <span id="meta-cust"></span>
+      </div>
+    </div>
+    <button class="btn-print" onclick="printSingle()">Print this barcode</button>
+  </div>
+
+  <div class="batch-section">
+    <div class="batch-label">Print multiple barcodes</div>
+    <div class="batch-hint">Add several jobs at once and print them all on one sheet.</div>
+    <div class="batch-list" id="batch-list"></div>
+    <button class="btn-add" onclick="addToBatch()">+ Add current job to batch</button>
+    <div id="batch-print-btn" style="display:none;margin-top:10px">
+      <button class="btn-print-all" onclick="printBatch()">Print all barcode sheet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print output area -->
+<div id="print-area" style="display:none"></div>
+
+<script>
+let batchJobs=[];
+
+function generate(){
+  const num=document.getElementById('inv-num').value.trim();
+  const cust=document.getElementById('cust-name').value.trim();
+  const err=document.getElementById('error');
+  if(!num){err.style.display='block';return;}
+  err.style.display='none';
+  try{
+    JsBarcode('#barcode',num,{
+      format:'CODE128',
+      width:2,
+      height:80,
+      displayValue:true,
+      fontSize:16,
+      fontOptions:'bold',
+      font:'DM Mono, monospace',
+      textMargin:6,
+      margin:10
+    });
+    document.getElementById('meta-num').textContent='#'+num;
+    document.getElementById('meta-cust').textContent=cust||'';
+    document.getElementById('preview').style.display='block';
+  } catch(e){
+    err.textContent='Could not generate barcode for that value. Try a shorter number.';
+    err.style.display='block';
+  }
+}
+
+function addToBatch(){
+  const num=document.getElementById('inv-num').value.trim();
+  const cust=document.getElementById('cust-name').value.trim();
+  if(!num){document.getElementById('error').style.display='block';return;}
+  if(batchJobs.find(j=>j.num===num)){alert('That job number is already in the batch.');return;}
+  batchJobs.push({num,cust});
+  renderBatch();
+  document.getElementById('inv-num').value='';
+  document.getElementById('cust-name').value='';
+  document.getElementById('preview').style.display='none';
+  document.getElementById('inv-num').focus();
+}
+
+function removeBatch(num){
+  batchJobs=batchJobs.filter(j=>j.num!==num);
+  renderBatch();
+}
+
+function renderBatch(){
+  const list=document.getElementById('batch-list');
+  const btn=document.getElementById('batch-print-btn');
+  if(!batchJobs.length){list.innerHTML='';btn.style.display='none';return;}
+  btn.style.display='block';
+  list.innerHTML=batchJobs.map(j=>`
+    <div class="batch-item">
+      <span class="batch-item-num">#${j.num}</span>
+      <span class="batch-item-cust">${j.cust||''}</span>
+      <button class="batch-remove" onclick="removeBatch('${j.num}')" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function printSingle(){
+  const num=document.getElementById('inv-num').value.trim()||document.getElementById('meta-num').textContent.replace('#','');
+  const cust=document.getElementById('cust-name').value.trim()||document.getElementById('meta-cust').textContent;
+  buildPrintArea([{num,cust}]);
+  setTimeout(()=>window.print(),300);
+}
+
+function printBatch(){
+  if(!batchJobs.length){alert('No jobs in batch.');return;}
+  buildPrintArea(batchJobs);
+  setTimeout(()=>window.print(),300);
+}
+
+function buildPrintArea(jobs){
+  const area=document.getElementById('print-area');
+  area.style.display='block';
+  area.innerHTML=`<div class="print-sheet">${jobs.map(j=>`
+    <div class="print-item">
+      <svg id="bc-${j.num.replace(/\W/g,'_')}"></svg>
+      <div class="print-item-meta">#${j.num}${j.cust?' · '+j.cust:''}</div>
+    </div>`).join('')}</div>`;
+  jobs.forEach(j=>{
+    try{
+      JsBarcode(`#bc-${j.num.replace(/\W/g,'_')}`,j.num,{
+        format:'CODE128',width:2,height:70,displayValue:true,
+        fontSize:13,font:'monospace',textMargin:4,margin:8
+      });
+    }catch(e){}
+  });
+}
+
+window.onafterprint=function(){
+  document.getElementById('print-area').style.display='none';
+  document.getElementById('print-area').innerHTML='';
+};
+</script>
+
+
+</body></html>
