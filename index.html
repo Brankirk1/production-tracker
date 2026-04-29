@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0060)file:///C:/Users/Brandon/Downloads/production-tracker_1.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -156,14 +156,14 @@ a{color:inherit;text-decoration:none}
 <div class="nav">
   <h1>Production Tracker</h1>
   <div class="nav-btns">
-    <button class="btn btn-scan btn-sm" onclick="openPanel(&#39;scan-modal&#39;)">Scan</button>
+    <button class="btn btn-scan btn-sm" onclick="openPanel('scan-modal')">Scan</button>
     <button class="btn btn-primary btn-sm" onclick="openNew()">+ Job</button>
   </div>
 </div>
 
 <div class="page">
   <div class="install-banner" id="install-banner">
-    <span class="install-close" onclick="document.getElementById(&#39;install-banner&#39;).style.display=&#39;none&#39;">×</span>
+    <span class="install-close" onclick="document.getElementById('install-banner').style.display='none'">×</span>
     <strong>Install this app on your phone</strong>
     <div class="steps">
       iPhone: Tap the Share button in Safari → "Add to Home Screen"<br>
@@ -171,13 +171,7 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
-  <div class="stats" id="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-val">0</div></div>
-    <div class="stat"><div class="stat-label">Rush</div><div class="stat-val rush">0</div></div>
-    <div class="stat"><div class="stat-label">Past due</div><div class="stat-val danger">0</div></div>
-    <div class="stat"><div class="stat-label">72h+</div><div class="stat-val warn">0</div></div>
-    <div class="stat"><div class="stat-label">96h+</div><div class="stat-val danger">0</div></div>
-    <div class="stat"><div class="stat-label">Shipped</div><div class="stat-val">0</div></div></div>
+  <div class="stats" id="stats"></div>
 
   <div class="legend">
     <span class="legend-item" style="background:#fef2f2;color:#991b1b;border:1px solid #fca5a5">RUSH</span>
@@ -186,8 +180,8 @@ a{color:inherit;text-decoration:none}
     <span class="legend-item" style="background:#fef3c7;color:#92400e">Due soon</span>
   </div>
 
-  <div class="tabs" id="tabs"><button class="tab" style="background:#1a6fb5;color:#fff;border-color:#1a6fb5" onclick="setFilter(&#39;All&#39;)">All (0)</button><button class="tab" style="" onclick="setFilter(&#39;Rush&#39;)">Rush (0)</button><button class="tab" style="" onclick="setFilter(&#39;Late&#39;)">Late (0)</button><button class="tab" style="" onclick="setFilter(&#39;Engineering&#39;)">Engineering (0)</button><button class="tab" style="" onclick="setFilter(&#39;Fabrication&#39;)">Fabrication (0)</button><button class="tab" style="" onclick="setFilter(&#39;Upgrades&#39;)">Upgrades (0)</button><button class="tab" style="" onclick="setFilter(&#39;Fireline&#39;)">Fireline (0)</button><button class="tab" style="" onclick="setFilter(&#39;Paint&#39;)">Paint (0)</button><button class="tab" style="" onclick="setFilter(&#39;Assembly&#39;)">Assembly (0)</button><button class="tab" style="" onclick="setFilter(&#39;QC&#39;)">QC (0)</button><button class="tab" style="" onclick="setFilter(&#39;Shipping&#39;)">Shipping (0)</button></div>
-  <div class="jobs-list" id="job-list"><div class="empty">No jobs here.<br>Tap "+ Job" to add one.</div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="jobs-list" id="job-list"></div>
 </div>
 
 <!-- New/Edit Job Modal -->
@@ -212,7 +206,7 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="field"><label>Notes</label><textarea id="nj-notes" placeholder="Any details…"></textarea></div>
     <div class="modal-footer">
-      <button class="btn" onclick="closePanel(&#39;new-modal&#39;)">Cancel</button>
+      <button class="btn" onclick="closePanel('new-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveJob()">Save</button>
     </div>
   </div>
@@ -237,7 +231,7 @@ a{color:inherit;text-decoration:none}
       <h3>Option 2 — Type it in</h3>
       <p style="font-size:12px;color:#555;margin-bottom:8px">Type or paste the invoice / job number manually.</p>
       <div class="manual-row">
-        <input id="manual-bc" placeholder="e.g. 11047" autocomplete="off" onkeydown="if(event.key===&#39;Enter&#39;)applyManual()">
+        <input id="manual-bc" placeholder="e.g. 11047" autocomplete="off" onkeydown="if(event.key==='Enter')applyManual()">
         <button class="btn" onclick="applyManual()">Use</button>
       </div>
     </div>
@@ -249,7 +243,7 @@ a{color:inherit;text-decoration:none}
     </div>
     <div id="scan-nomatch" style="display:none;background:#fef3c7;border-radius:8px;padding:10px 12px;font-size:13px;color:#92400e;margin-bottom:10px;font-weight:500"></div>
     <div class="modal-footer">
-      <button class="btn" onclick="closePanel(&#39;scan-modal&#39;)">Close</button>
+      <button class="btn" onclick="closePanel('scan-modal')">Close</button>
     </div>
   </div>
 </div>
@@ -259,7 +253,7 @@ a{color:inherit;text-decoration:none}
   <div class="modal" id="detail-content"></div>
 </div>
 
-<script src="./Production Tracker_files/jsQR.min.js.download"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
 <script>
 const STAGES=["Engineering","Fabrication","Upgrades","Fireline","Paint","Assembly","QC","Shipping"];
 const SBGL={
@@ -499,17 +493,24 @@ function handleBarcodeImage(input){
       const ctx=canvas.getContext('2d');
       ctx.drawImage(img,0,0);
       const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      if(typeof jsQR==='undefined'){
-        document.getElementById('scan-error').textContent='Scanner not loaded yet. Try again in a moment.';
-        document.getElementById('scan-error').style.display='block';return;
+      // Retry up to 5 times if jsQR not loaded yet
+      let attempts=0;
+      function tryDecode(){
+        attempts++;
+        if(typeof jsQR==='undefined'){
+          if(attempts<5){setTimeout(tryDecode,500);return;}
+          document.getElementById('scan-error').textContent='Scanner failed to load. Please check your internet connection and try again.';
+          document.getElementById('scan-error').style.display='block';return;
+        }
+        const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'attemptBoth'});
+        if(code&&code.data){
+          onScan(code.data);
+        } else {
+          document.getElementById('scan-error').textContent='Could not read barcode. Make sure the barcode is clear and well-lit, then try again.';
+          document.getElementById('scan-error').style.display='block';
+        }
       }
-      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'attemptBoth'});
-      if(code&&code.data){
-        onScan(code.data);
-      } else {
-        document.getElementById('scan-error').textContent='Could not read barcode from image. Try holding the camera steadier or use Option 2 to type it in.';
-        document.getElementById('scan-error').style.display='block';
-      }
+      tryDecode();
     };
     img.src=e.target.result;
   };
@@ -567,6 +568,5 @@ function scanMove(id,stage){
 render();
 setInterval(render,60000);
 </script>
-
-
-</body></html>
+</body>
+</html>
